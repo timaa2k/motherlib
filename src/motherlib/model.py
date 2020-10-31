@@ -31,7 +31,7 @@ class Record:
 
 class Result:
 
-    def __init(
+    def __init__(
         self,
         content: Optional[BytesIO] = None,
         records: Optional[List[Record]] = None,

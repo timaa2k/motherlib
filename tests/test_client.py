@@ -1,6 +1,7 @@
 import datetime
 import uuid
 from hashlib import sha256
+from io import BytesIO
 
 import pytest
 import responses
@@ -18,18 +19,18 @@ class TestAPIClient:
     @responses.activate
     def test_get_blob(self, api: APIClient) -> None:
         test_content = str.encode(str(uuid.uuid4()))
-        test_ref = sha256(content).hexdigest()
+        test_ref = sha256(test_content).hexdigest()
         responses.add(
             method=responses.GET,
             url=f'{api.addr}/blob/{test_ref}',
-            status=HTTPStatus.STATUS_OK.value,
+            status=HTTPStatus.NO_CONTENT.value,
             content_type='application/octet-stream',
             body=test_content,
         )
         content = api.get_blob(ref=test_ref)
         assert len(responses.calls) == 1
         assert responses.calls[0].request.url == f'{api.addr}/blob/{test_ref}'
-        assert content == test_content
+        assert content.read() == test_content
 
     @responses.activate
     def test_put_latest(self, api: APIClient) -> None:
@@ -65,7 +66,8 @@ class TestAPIClient:
 
     @responses.activate
     def test_get_latest_multiple(self, api: APIClient) -> None:
-        tags = ['log']
+        tags = set(['log'])
+        URI = '/'.join(list(tags))
         responses.add(
             method=responses.GET,
             url=f'{api.addr}/latest/{URI}',
@@ -102,7 +104,8 @@ class TestAPIClient:
 
     @responses.activate
     def test_get_history(self, api: APIClient) -> None:
-        tags = ['log', 'development']
+        tags = set(['log', 'development'])
+        URI = '/'.join(list(tags))
         responses.add(
             method=responses.GET,
             url=f'{api.addr}/history/{URI}',
@@ -123,7 +126,7 @@ class TestAPIClient:
         )
         records = api.get_history(tags=tags)
         assert len(responses.calls) == 1
-        assert responses.calls[0].request.url == f'{api.addr}/latest/{URI}'
+        assert responses.calls[0].request.url == f'{api.addr}/history/{URI}'
         assert len(records) == 2
         assert records[0].ref == \
             'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'
@@ -138,7 +141,8 @@ class TestAPIClient:
 
     @responses.activate
     def test_delete_history(self, api: APIClient) -> None:
-        tags = ['log', 'development']
+        tags = set(['log', 'development'])
+        URI = '/'.join(list(tags))
         responses.add(
             method=responses.DELETE,
             url=f'{api.addr}/history/{URI}',

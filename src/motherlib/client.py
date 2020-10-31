@@ -112,6 +112,21 @@ class APIClient:
         except requests.exceptions.HTTPError as exc:
             raise APIError.FromHTTPResponse(exc.response)
 
+    def get_blob(self, ref: str) -> BytesIO:
+        """
+        Get the content for the specified digest ref.
+
+        Raises:
+            APIError
+        """
+        response = self.request(
+            method='GET',
+            uri=f'/blob/{ref}',
+            headers={'Accept': 'application/octet-stream'},
+        )
+        response.raise_for_status()
+        return BytesIO(response.content)
+
     def put_latest(self, tags: Set[str], content: BytesIO) -> str:
         """
         Put the latest tagged content on the server.
@@ -135,7 +150,7 @@ class APIClient:
     def get_latest(self, tags: Set[str]) -> Result:
         """
         Get the latest tagged content from the server. If the content is
-        uniquely identified return the content.  If the content is not uniquely
+        uniquely identified return the content. If the content is not uniquely
         identified return the matching records ordered backwards in time.
 
         Raises:
@@ -150,17 +165,15 @@ class APIClient:
             headers={'Accept': 'application/json'},
         )
         response.raise_for_status()
-
         try:
             blob = response.json()
         except json.decoder.JSONDecodeError:
-            return Result(content=response.content)
-
+            return Result(content=BytesIO(response.content))
         records = []
         for item in blob:
             r = Record.unmarshal_json(item)
             records.append(r)
-        return records
+        return Result(records=records)
 
     def get_history(self, tags: Set[str]) -> List[Record]:
         """
@@ -177,11 +190,11 @@ class APIClient:
             uri=f'/history/{URI}',
             headers={'Accept': 'application/json'},
         )
-        payload = response.json()
-        import pdb; pdb.set_trace()
+        response.raise_for_status()
         records = []
-        r = Record.unmarshal_json(payload)
-        records.append(r)
+        for item in response.json():
+            r = Record.unmarshal_json(item)
+            records.append(r)
         return records
 
     def delete_history(self, tags: Set[str]) -> None:
