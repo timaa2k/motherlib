@@ -24,11 +24,11 @@ DEV_REQUIRES = _get_dependencies(
 LONG_DESCRIPTION = pathlib.Path('README.rst').read_text()
 
 setuptools.setup(
-    name="priolib",
+    name="motherlib",
     version="0.1.0",
     author="Tim Weidner",
     author_email="timaa2k@gmail.com",
-    description="motherchip client library",
+    description="Mothership client library",
     long_description=LONG_DESCRIPTION,
     long_description_content_type="text/x-rst",
     url="https://github.com/timaa2k/motherlib",
