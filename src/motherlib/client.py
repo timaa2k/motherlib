@@ -228,6 +228,7 @@ class APIClient:
             method='DELETE',
             uri=f'/history/{URI}',
         )
+        response.raise_for_status()
 
     def delete_history(self, tags: Set[str]) -> None:
         """
@@ -240,4 +241,4 @@ class APIClient:
         Delete the historical records containing at least the tags.
         """
         sep = '' if len(tags) == 0 else '/'
-        return self._get_history(URI='/'.join(list(tags)) + sep)
+        return self._delete_history(URI='/'.join(list(tags)) + sep)
