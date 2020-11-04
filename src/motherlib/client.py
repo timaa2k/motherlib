@@ -147,18 +147,15 @@ class APIClient:
         ref = location.split('/blob/')[-1]
         return ref
 
-    def get_latest(self, tags: Set[str]) -> Result:
+    def _get_latest(self, URI: str) -> Result:
         """
-        Get the latest tagged content from the server. If the content is
+        Get the latest matching content from the server. If the content is
         uniquely identified return the content. If the content is not uniquely
         identified return the matching records ordered backwards in time.
 
         Raises:
             APIError
         """
-        if len(tags) == 0:
-            raise ValueError
-        URI = '/'.join(list(tags))
         response = self.request(
             method='GET',
             uri=f'/latest/{URI}',
@@ -175,16 +172,26 @@ class APIClient:
             records.append(r)
         return Result(records=records)
 
-    def get_history(self, tags: Set[str]) -> List[Record]:
+    def get_latest(self, tags: Set[str]) -> Result:
         """
-        Get the historical tagged content from the server. Return the matching
+        Return the latest result exactly matching the tags.
+        """
+        return self._get_latest(URI='/'.join(list(tags)))
+
+    def get_superset_latest(self, tags: Set[str]) -> Result:
+        """
+        Return the latest result containing at least the tags.
+        """
+        sep = '' if len(tags) == 0 else '/'
+        return self._get_latest(URI='/'.join(list(tags)) + sep)
+
+    def _get_history(self, URI: str) -> List[Record]:
+        """
+        Get the historical content from the server. Return the matching
         records ordered backwards in time.
         Raises:
             APIError
         """
-        if len(tags) == 0:
-            raise ValueError
-        URI = '/'.join(list(tags))
         response = self.request(
             method='GET',
             uri=f'/history/{URI}',
@@ -197,17 +204,40 @@ class APIClient:
             records.append(r)
         return records
 
-    def delete_history(self, tags: Set[str]) -> None:
+    def get_history(self, tags: Set[str]) -> List[Record]:
         """
-        Delete tagged content and all its history.
+        Return the historical records exactly matching the tags.
+        """
+        return self._get_history(URI='/'.join(list(tags)))
+
+    def get_superset_history(self, tags: Set[str]) -> List[Record]:
+        """
+        Return the historical records containing at least the tags.
+        """
+        sep = '' if len(tags) == 0 else '/'
+        return self._get_history(URI='/'.join(list(tags)) + sep)
+
+    def _delete_history(self, URI: str) -> None:
+        """
+        Delete content and all its history from the server.
 
         Raises:
             APIError
         """
-        if len(tags) == 0:
-            raise ValueError
-        URI = '/'.join(list(tags))
         response = self.request(
             method='DELETE',
             uri=f'/history/{URI}',
         )
+
+    def delete_history(self, tags: Set[str]) -> None:
+        """
+        Delete the historical records exactly matching the tags.
+        """
+        return self._delete_history(URI='/'.join(list(tags)))
+
+    def delete_superset_history(self, tags: Set[str]) -> None:
+        """
+        Delete the historical records containing at least the tags.
+        """
+        sep = '' if len(tags) == 0 else '/'
+        return self._get_history(URI='/'.join(list(tags)) + sep)
