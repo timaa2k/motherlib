@@ -1,6 +1,6 @@
 import json
 from io import BytesIO
-from typing import Any, Dict, List, Optional, Tuple, Union, Set
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 import requests
 import retrying
@@ -81,7 +81,7 @@ class APIClient:
 
     def __init__(self, addr: str, retries: int = 3) -> None:
         """
-        Set API client retry behavior.
+        List API client retry behavior.
 
         """
         self.addr = addr
@@ -127,7 +127,7 @@ class APIClient:
         response.raise_for_status()
         return BytesIO(response.content)
 
-    def put_latest(self, tags: Set[str], content: BytesIO) -> str:
+    def put_latest(self, tags: List[str], content: BytesIO) -> str:
         """
         Put the latest tagged content on the server.
 
@@ -136,7 +136,7 @@ class APIClient:
         """
         if len(tags) == 0:
             raise ValueError
-        URI = '/'.join(list(tags))
+        URI = '/'.join(tags)
         response = self.request(
             method='PUT',
             uri=f'/latest/{URI}',
@@ -172,18 +172,18 @@ class APIClient:
             records.append(r)
         return Result(records=records)
 
-    def get_latest(self, tags: Set[str]) -> Result:
+    def get_latest(self, tags: List[str]) -> Result:
         """
         Return the latest result exactly matching the tags.
         """
-        return self._get_latest(URI='/'.join(list(tags)))
+        return self._get_latest(URI='/'.join(tags))
 
-    def get_superset_latest(self, tags: Set[str]) -> Result:
+    def get_superset_latest(self, tags: List[str]) -> Result:
         """
         Return the latest result containing at least the tags.
         """
         sep = '' if len(tags) == 0 else '/'
-        return self._get_latest(URI='/'.join(list(tags)) + sep)
+        return self._get_latest(URI='/'.join(tags) + sep)
 
     def _get_history(self, URI: str) -> List[Record]:
         """
@@ -204,18 +204,18 @@ class APIClient:
             records.append(r)
         return records
 
-    def get_history(self, tags: Set[str]) -> List[Record]:
+    def get_history(self, tags: List[str]) -> List[Record]:
         """
         Return the historical records exactly matching the tags.
         """
-        return self._get_history(URI='/'.join(list(tags)))
+        return self._get_history(URI='/'.join(tags))
 
-    def get_superset_history(self, tags: Set[str]) -> List[Record]:
+    def get_superset_history(self, tags: List[str]) -> List[Record]:
         """
         Return the historical records containing at least the tags.
         """
         sep = '' if len(tags) == 0 else '/'
-        return self._get_history(URI='/'.join(list(tags)) + sep)
+        return self._get_history(URI='/'.join(tags) + sep)
 
     def _delete_history(self, URI: str) -> None:
         """
@@ -230,15 +230,15 @@ class APIClient:
         )
         response.raise_for_status()
 
-    def delete_history(self, tags: Set[str]) -> None:
+    def delete_history(self, tags: List[str]) -> None:
         """
         Delete the historical records exactly matching the tags.
         """
-        return self._delete_history(URI='/'.join(list(tags)))
+        return self._delete_history(URI='/'.join(tags))
 
-    def delete_superset_history(self, tags: Set[str]) -> None:
+    def delete_superset_history(self, tags: List[str]) -> None:
         """
         Delete the historical records containing at least the tags.
         """
         sep = '' if len(tags) == 0 else '/'
-        return self._delete_history(URI='/'.join(list(tags)) + sep)
+        return self._delete_history(URI='/'.join(tags) + sep)

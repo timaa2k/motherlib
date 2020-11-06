@@ -34,10 +34,10 @@ class TestAPIClient:
 
     @responses.activate
     def test_put_latest(self, api: APIClient) -> None:
-        tags = set(['log', 'development'])
+        tags = ['log', 'development']
         content = str.encode(str(uuid.uuid4()))
         test_ref = sha256(content).hexdigest()
-        URI = '/'.join(list(tags))
+        URI = '/'.join(tags)
         responses.add(
             method=responses.PUT,
             url=f'{api.addr}/latest/{URI}',
@@ -51,8 +51,8 @@ class TestAPIClient:
 
     @responses.activate
     def test_get_latest_single(self, api: APIClient) -> None:
-        tags = set(['log', 'development'])
-        URI = '/'.join(list(tags))
+        tags = ['log', 'development']
+        URI = '/'.join(tags)
         responses.add(
             method=responses.GET,
             url=f'{api.addr}/latest/{URI}',
@@ -66,8 +66,8 @@ class TestAPIClient:
 
     @responses.activate
     def test_get_latest_multiple(self, api: APIClient) -> None:
-        tags = set(['log'])
-        URI = '/'.join(list(tags))
+        tags = ['log']
+        URI = '/'.join(tags)
         responses.add(
             method=responses.GET,
             url=f'{api.addr}/latest/{URI}',
@@ -81,7 +81,7 @@ class TestAPIClient:
                 },
                 {
                     "ref": "f112be06fe41be15394ffe5d35eac60a9463674995b40c666b6febabe3942a42",
-                    "tags": ["development", "log"],
+                    "tags": ["log", "development"],
                     "created": "2020-10-29T00:38:23+00:00"
                 },
             ],
@@ -93,19 +93,19 @@ class TestAPIClient:
         assert len(result.records) == 2
         assert result.records[0].ref == \
             'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'
-        assert result.records[0].tags == set(['log', 'mothership'])
+        assert result.records[0].tags == ['log', 'mothership']
         assert result.records[0].created == datetime.datetime(
             2020, 10, 29, 00, 38, 50, tzinfo=datetime.timezone.utc)
         assert result.records[1].ref == \
             'f112be06fe41be15394ffe5d35eac60a9463674995b40c666b6febabe3942a42'
-        assert result.records[1].tags == set(['development', 'log'])
+        assert result.records[1].tags == ['log', 'development']
         assert result.records[1].created == datetime.datetime(
             2020, 10, 29, 00, 38, 23, tzinfo=datetime.timezone.utc)
 
     @responses.activate
     def test_get_history(self, api: APIClient) -> None:
-        tags = set(['log', 'development'])
-        URI = '/'.join(list(tags))
+        tags = ['log', 'development']
+        URI = '/'.join(tags)
         responses.add(
             method=responses.GET,
             url=f'{api.addr}/history/{URI}',
@@ -114,12 +114,12 @@ class TestAPIClient:
             json=[
                 {
                     "ref": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-                    "tags": ["development", "log", "mothership"],
+                    "tags": ["log", "development", "mothership"],
                     "created": "2020-10-29T00:38:50+00:00"
                 },
                 {
                     "ref": "f112be06fe41be15394ffe5d35eac60a9463674995b40c666b6febabe3942a42",
-                    "tags": ["development", "log", "mothership"],
+                    "tags": ["log", "development", "mothership"],
                     "created": "2020-10-29T00:38:23+00:00"
                 },
             ],
@@ -130,19 +130,19 @@ class TestAPIClient:
         assert len(records) == 2
         assert records[0].ref == \
             'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'
-        assert records[0].tags == set(['development', 'log', 'mothership'])
+        assert records[0].tags == ['log', 'development', 'mothership']
         assert records[0].created == datetime.datetime(
             2020, 10, 29, 00, 38, 50, tzinfo=datetime.timezone.utc)
         assert records[1].ref == \
             'f112be06fe41be15394ffe5d35eac60a9463674995b40c666b6febabe3942a42'
-        assert records[1].tags == set(['development', 'log', 'mothership'])
+        assert records[1].tags == ['log', 'development', 'mothership']
         assert records[1].created == datetime.datetime(
             2020, 10, 29, 00, 38, 23, tzinfo=datetime.timezone.utc)
 
     @responses.activate
     def test_delete_history(self, api: APIClient) -> None:
-        tags = set(['log', 'development'])
-        URI = '/'.join(list(tags))
+        tags = ['log', 'development']
+        URI = '/'.join(tags)
         responses.add(
             method=responses.DELETE,
             url=f'{api.addr}/history/{URI}',

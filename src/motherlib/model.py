@@ -1,5 +1,5 @@
 from io import BytesIO
-from typing import Any, Dict, List, Optional, Set
+from typing import Any, Dict, List, Optional
 
 import iso8601
 import json
@@ -9,7 +9,7 @@ class Record:
 
     def __init__(
         self,
-        tags: Set[str] = None,
+        tags: List[str] = None,
         ref: Optional[str] = None,
         created: Optional[str] = None,
     ) -> None:
@@ -23,7 +23,7 @@ class Record:
     @classmethod
     def unmarshal_json(cls, json: Dict[str, Any]) -> 'Record':
         return cls(
-            tags=set(list(json['tags'])),
+            tags=json['tags'],
             ref=json['ref'],
             created=json['created'],
         )
