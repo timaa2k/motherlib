@@ -50,22 +50,7 @@ class TestAPIClient:
         assert ref == test_ref
 
     @responses.activate
-    def test_get_latest_single(self, api: APIClient) -> None:
-        tags = ['log', 'development']
-        URI = '/'.join(tags)
-        responses.add(
-            method=responses.GET,
-            url=f'{api.addr}/latest/{URI}',
-            status=HTTPStatus.OK.value,
-        )
-        result = api.get_latest(tags=tags)
-        assert len(responses.calls) == 1
-        assert responses.calls[0].request.url == f'{api.addr}/latest/{URI}'
-        assert result.records is None
-        assert result.content is not None
-
-    @responses.activate
-    def test_get_latest_multiple(self, api: APIClient) -> None:
+    def test_get_latest(self, api: APIClient) -> None:
         tags = ['log']
         URI = '/'.join(tags)
         responses.add(
@@ -86,20 +71,19 @@ class TestAPIClient:
                 },
             ],
         )
-        result = api.get_latest(tags=tags)
+        records = api.get_latest(tags=tags)
         assert len(responses.calls) == 1
         assert responses.calls[0].request.url == f'{api.addr}/latest/{URI}'
-        assert result.content is None
-        assert len(result.records) == 2
-        assert result.records[0].ref == \
+        assert len(records) == 2
+        assert records[0].ref == \
             'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'
-        assert result.records[0].tags == ['log', 'mothership']
-        assert result.records[0].created == datetime.datetime(
+        assert records[0].tags == ['log', 'mothership']
+        assert records[0].created == datetime.datetime(
             2020, 10, 29, 00, 38, 50, tzinfo=datetime.timezone.utc)
-        assert result.records[1].ref == \
+        assert records[1].ref == \
             'f112be06fe41be15394ffe5d35eac60a9463674995b40c666b6febabe3942a42'
-        assert result.records[1].tags == ['log', 'development']
-        assert result.records[1].created == datetime.datetime(
+        assert records[1].tags == ['log', 'development']
+        assert records[1].created == datetime.datetime(
             2020, 10, 29, 00, 38, 23, tzinfo=datetime.timezone.utc)
 
     @responses.activate

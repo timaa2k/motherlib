@@ -5,7 +5,7 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 import requests
 import retrying
 
-from .model import Record, Result
+from .model import Record
 
 
 DEFAULT_TIMEOUT = (3.05, 27)
@@ -143,102 +143,50 @@ class APIClient:
             data=content,
         )
         response.raise_for_status()
-        location = response.headers['Location']
-        ref = location.split('/blob/')[-1]
-        return ref
+        return response.headers['Location'].split('/blob/')[-1]
 
-    def _get_latest(self, URI: str) -> Result:
+    def get_latest(self, tags: List[str]) -> List[Record]:
         """
-        Get the latest matching content from the server. If the content is
-        uniquely identified return the content. If the content is not uniquely
-        identified return the matching records ordered backwards in time.
+        Return the matching records ordered backwards in time.
 
         Raises:
             APIError
         """
+        URI='/'.join(tags)
         response = self.request(
             method='GET',
             uri=f'/latest/{URI}',
             headers={'Accept': 'application/json'},
         )
         response.raise_for_status()
-        try:
-            blob = response.json()
-        except json.decoder.JSONDecodeError:
-            return Result(content=BytesIO(response.content))
-        records = []
-        for item in blob:
-            r = Record.unmarshal_json(item)
-            records.append(r)
-        return Result(records=records)
+        return [Record.unmarshal_json(i) for i in response.json()]
 
-    def get_latest(self, tags: List[str]) -> Result:
-        """
-        Return the latest result exactly matching the tags.
-        """
-        return self._get_latest(URI='/'.join(tags))
-
-    def get_superset_latest(self, tags: List[str]) -> Result:
-        """
-        Return the latest result containing at least the tags.
-        """
-        sep = '' if len(tags) == 0 else '/'
-        return self._get_latest(URI='/'.join(tags) + sep)
-
-    def _get_history(self, URI: str) -> List[Record]:
+    def get_history(self, tags: List[str]) -> List[Record]:
         """
         Get the historical content from the server. Return the matching
         records ordered backwards in time.
         Raises:
             APIError
         """
+        URI='/'.join(tags)
         response = self.request(
             method='GET',
             uri=f'/history/{URI}',
             headers={'Accept': 'application/json'},
         )
         response.raise_for_status()
-        records = []
-        for item in response.json():
-            r = Record.unmarshal_json(item)
-            records.append(r)
-        return records
+        return [Record.unmarshal_json(i) for i in response.json()]
 
-    def get_history(self, tags: List[str]) -> List[Record]:
-        """
-        Return the historical records exactly matching the tags.
-        """
-        return self._get_history(URI='/'.join(tags))
-
-    def get_superset_history(self, tags: List[str]) -> List[Record]:
-        """
-        Return the historical records containing at least the tags.
-        """
-        sep = '' if len(tags) == 0 else '/'
-        return self._get_history(URI='/'.join(tags) + sep)
-
-    def _delete_history(self, URI: str) -> None:
+    def delete_history(self, tags: List[str]) -> None:
         """
         Delete content and all its history from the server.
 
         Raises:
             APIError
         """
+        URI='/'.join(tags)
         response = self.request(
             method='DELETE',
             uri=f'/history/{URI}',
         )
         response.raise_for_status()
-
-    def delete_history(self, tags: List[str]) -> None:
-        """
-        Delete the historical records exactly matching the tags.
-        """
-        return self._delete_history(URI='/'.join(tags))
-
-    def delete_superset_history(self, tags: List[str]) -> None:
-        """
-        Delete the historical records containing at least the tags.
-        """
-        sep = '' if len(tags) == 0 else '/'
-        return self._delete_history(URI='/'.join(tags) + sep)

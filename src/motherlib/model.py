@@ -27,14 +27,3 @@ class Record:
             ref=json['ref'],
             created=json['created'],
         )
-
-
-class Result:
-
-    def __init__(
-        self,
-        content: Optional[BytesIO] = None,
-        records: Optional[List[Record]] = None,
-    ) -> None:
-        self.content = content
-        self.records = records
