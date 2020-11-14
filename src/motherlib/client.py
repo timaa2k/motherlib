@@ -29,7 +29,7 @@ class APIError(Exception):
         return cls(
             err=error['err'],
             kind=error['kind'],
-            statuscode=error['statuscode'],
+            statuscode=response.statuscode,
         )
 
 
