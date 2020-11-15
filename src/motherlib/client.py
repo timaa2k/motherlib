@@ -17,19 +17,22 @@ class ConnectionError(Exception):
 
 class APIError(Exception):
 
-    def __init__(self, err: str, kind: str, statuscode: int) -> None:
+    def __init__(self, statuscode: int, kind: str, message: str, err: Optional[str]=None) -> None:
         super().__init__()
-        self.err = err
-        self.kind = kind
         self.statuscode = statuscode
+        self.kind = kind
+        self.message = message
+        self.err = err
 
     @classmethod
     def FromHTTPResponse(cls, response: requests.Response) -> 'APIError':
         error = response.json()
+        err = error.get('err', '')
         return cls(
-            err=error['err'],
             kind=error['kind'],
+            message=error['message'],
             statuscode=response.status_code,
+            err=None if err == '' else err,
         )
 
 
@@ -56,11 +59,15 @@ class HTTPClient:
         """
         Retry HTTP request on ``ConnectionError`` and ``HTTPError``s.
         """
+        def retryfunc(e: Exception):
+            condition = False
+            if isinstance(requests.exceptions.HTTPError, e):
+                condition = e.status_code != 401
+            condition or isinstance(e, requests.exceptions.ConnectionError)
+
         @retrying.retry(
             stop_max_attempt_number=self.retries,
-            retry_on_exception=lambda e: isinstance(
-                e, requests.exceptions.ConnectionError) or isinstance(
-                    e, requests.exceptions.HTTPError),
+            retry_on_exception=retryfunc,
         )
         def do_request() -> requests.Response:
             response = requests.request(
