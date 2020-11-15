@@ -62,7 +62,7 @@ class HTTPClient:
         def retryfunc(e: Exception) -> bool:
             condition = False
             if isinstance(e, requests.exceptions.HTTPError):
-                condition = e.status_code != 401
+                condition = e.response.status_code != 401
             return condition or isinstance(e, requests.exceptions.ConnectionError)
 
         @retrying.retry(
