@@ -59,11 +59,11 @@ class HTTPClient:
         """
         Retry HTTP request on ``ConnectionError`` and ``HTTPError``s.
         """
-        def retryfunc(e: Exception):
+        def retryfunc(e: Exception) -> bool:
             condition = False
-            if isinstance(requests.exceptions.HTTPError, e):
+            if isinstance(e, requests.exceptions.HTTPError):
                 condition = e.status_code != 401
-            condition or isinstance(e, requests.exceptions.ConnectionError)
+            return condition or isinstance(e, requests.exceptions.ConnectionError)
 
         @retrying.retry(
             stop_max_attempt_number=self.retries,
