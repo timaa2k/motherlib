@@ -5,7 +5,7 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 import requests
 import retrying
 
-from .model import Record
+from .model import AuthInfo, Record
 
 
 DEFAULT_TIMEOUT = (3.05, 27)
@@ -86,12 +86,18 @@ class HTTPClient:
 
 class APIClient:
 
-    def __init__(self, addr: str, retries: int = 3) -> None:
+    def __init__(
+        self,
+        addr: str,
+        bearer_token: Optional[str] = None,
+        retries: int = 3,
+    ) -> None:
         """
         List API client retry behavior.
 
         """
         self.addr = addr
+        self.bearer_token = bearer_token
         self.http = HTTPClient(verify=False, retries=retries)
 
     def request(
@@ -106,6 +112,8 @@ class APIClient:
         Retry on any HTTP error.
 
         """
+        if self.bearer_token is not None:
+            headers['Authorization'] = 'Bearer ' + self.bearer_token
         try:
             return self.http.request(
                 method=method,
@@ -118,6 +126,26 @@ class APIClient:
             raise ConnectionError from exc
         except requests.exceptions.HTTPError as exc:
             raise APIError.FromHTTPResponse(exc.response)
+
+    def get_login_url(self, provider: str) -> None:
+        """
+        Initiate the OAuth2 authentication flow for the specific Provider.
+
+        The output presents a prepared URL which the user must visit in a browser
+        to be asked to authenticate with an account of the specified provider.
+        The account information is then used to determine the identity and the
+        username of the user on the mothership side.
+
+        Raises:
+            APIError
+        """
+        response = self.request(
+            method='GET',
+            uri=f'/auth/{provider}/login',
+            headers={'Accept': 'application/json'},
+        )
+        response.raise_for_status()
+        return AuthInfo.unmarshal_json(response.json())
 
     def get_blob(self, ref: str) -> BytesIO:
         """
