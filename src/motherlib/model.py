@@ -13,9 +13,9 @@ class AuthInfo:
         provider_name: str,
         auth_url: str,
     ) -> None:
-        self.provider=provider
-        self.provider_name=provider_name,
-        self.auth_url=auth_url,
+        self.provider = provider
+        self.provider_name = provider_name
+        self.auth_url = auth_url
 
     def __str__(self) -> str:
         return f'({self.provider}, {self.provider_name}, {self.auth_url})'
@@ -27,6 +27,7 @@ class AuthInfo:
             provider_name=json['provider_name'],
             auth_url=json['auth_url'],
         )
+
 
 class Record:
 

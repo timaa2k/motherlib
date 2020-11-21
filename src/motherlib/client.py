@@ -127,7 +127,7 @@ class APIClient:
         except requests.exceptions.HTTPError as exc:
             raise APIError.FromHTTPResponse(exc.response)
 
-    def get_login_url(self, provider: str) -> None:
+    def get_login_info(self, provider: str) -> 'AuthInfo':
         """
         Initiate the OAuth2 authentication flow for the specific Provider.
 
@@ -145,7 +145,9 @@ class APIClient:
             headers={'Accept': 'application/json'},
         )
         response.raise_for_status()
-        return AuthInfo.unmarshal_json(response.json())
+        r = response.json()
+        print(r)
+        return AuthInfo.unmarshal_json(r)
 
     def get_blob(self, ref: str) -> BytesIO:
         """
