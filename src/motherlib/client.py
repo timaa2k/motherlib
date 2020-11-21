@@ -145,9 +145,7 @@ class APIClient:
             headers={'Accept': 'application/json'},
         )
         response.raise_for_status()
-        r = response.json()
-        print(r)
-        return AuthInfo.unmarshal_json(r)
+        return AuthInfo.unmarshal_json(response.json())
 
     def get_blob(self, ref: str) -> BytesIO:
         """
