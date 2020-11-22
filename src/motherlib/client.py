@@ -89,6 +89,7 @@ class APIClient:
     def __init__(
         self,
         addr: str,
+        resource_owner_uid: str,
         bearer_token: Optional[str] = None,
         retries: int = 3,
     ) -> None:
@@ -97,6 +98,7 @@ class APIClient:
 
         """
         self.addr = addr
+        self.resource_owner_uid = resource_owner_uid
         self.bearer_token = bearer_token
         self.http = HTTPClient(verify=False, retries=retries)
 
@@ -141,7 +143,7 @@ class APIClient:
         """
         response = self.request(
             method='GET',
-            uri=f'/auth/{provider}/login',
+            uri=f'/login/{provider}',
             headers={'Accept': 'application/json'},
         )
         response.raise_for_status()
@@ -149,14 +151,14 @@ class APIClient:
 
     def get_blob(self, ref: str) -> BytesIO:
         """
-        Get the content for the specified digest ref.
+        Get the content for the specified ref.
 
         Raises:
             APIError
         """
         response = self.request(
             method='GET',
-            uri=f'/blob/{ref}',
+            uri=f'{ref}',
             headers={'Accept': 'application/octet-stream'},
         )
         response.raise_for_status()
@@ -174,7 +176,7 @@ class APIClient:
         URI = '/'.join(tags)
         response = self.request(
             method='PUT',
-            uri=f'/latest/{URI}',
+            uri=f'/u/{self.resource_owner_uid}/latest/{URI}',
             data=content,
         )
         response.raise_for_status()
@@ -190,7 +192,7 @@ class APIClient:
         URI='/'.join(tags)
         response = self.request(
             method='GET',
-            uri=f'/latest/{URI}',
+            uri=f'/u/{self.resource_owner_uid}/latest/{URI}',
             headers={'Accept': 'application/json'},
         )
         response.raise_for_status()
@@ -206,7 +208,7 @@ class APIClient:
         URI='/'.join(tags)
         response = self.request(
             method='GET',
-            uri=f'/history/{URI}',
+            uri=f'/u/{self.resource_owner_uid}/history/{URI}',
             headers={'Accept': 'application/json'},
         )
         response.raise_for_status()
@@ -222,6 +224,6 @@ class APIClient:
         URI='/'.join(tags)
         response = self.request(
             method='DELETE',
-            uri=f'/history/{URI}',
+            uri=f'/u/{self.resource_owner_uid}/history/{URI}',
         )
         response.raise_for_status()
