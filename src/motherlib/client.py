@@ -149,7 +149,7 @@ class APIClient:
         response.raise_for_status()
         return AuthInfo.unmarshal_json(response.json())
 
-    def get_blob(self, ref: str) -> BytesIO:
+    def cas_get(self, ref: str) -> BytesIO:
         """
         Get the content for the specified ref.
 
@@ -180,7 +180,7 @@ class APIClient:
             data=content,
         )
         response.raise_for_status()
-        return response.headers['Location'].split('/blob/')[-1]
+        return response.headers['Location'].split('/cas/')[-1]
 
     def get_latest(self, tags: List[str]) -> List[Record]:
         """
