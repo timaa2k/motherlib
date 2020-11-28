@@ -2,6 +2,7 @@ import json
 from io import BytesIO
 from typing import Any, Dict, List, Optional, Tuple, Union
 
+import urllib3
 import requests
 import retrying
 
@@ -125,6 +126,8 @@ class APIClient:
                 data=data,
             )
         except requests.exceptions.ConnectionError as exc:
+            raise ConnectionError from exc
+        except urllib3.exceptions.NewConnectionError as exc:
             raise ConnectionError from exc
         except requests.exceptions.HTTPError as exc:
             raise APIError.FromHTTPResponse(exc.response)
